@@ -1,0 +1,68 @@
+-   platform: template
+    sensors:
+      mower_progress:
+        friendly_name: "Mower Progress"
+        value_template: >-
+          {% set mower_state = states('lawn_mower.terramow_lawn_mower') %}
+          {% set total_minutes = 90 %}
+          {% set start_time = state_attr('sensor.mower_progress', 'start_time') %}
+          
+          {% if mower_state == 'mowing' %}
+            {% if start_time %}
+              {% set elapsed_minutes = (now().timestamp() - (start_time | as_timestamp)) / 60 %}
+              {% set remaining_minutes = total_minutes - elapsed_minutes %}
+              {% if remaining_minutes > 0 %}
+                {{ (remaining_minutes | round(0)) | int }}
+              {% else %}
+                0
+              {% endif %}
+            {% else %}
+              {{ total_minutes }}
+            {% endif %}
+          {% elif mower_state == 'paused' %}
+            {% if start_time %}
+              {% set elapsed_minutes = (now().timestamp() - (start_time | as_timestamp)) / 60 %}
+              {% set remaining_minutes = total_minutes - elapsed_minutes %}
+              {% if remaining_minutes > 0 %}
+                {{ (remaining_minutes | round(0)) | int }}
+              {% else %}
+                0
+              {% endif %}
+            {% else %}
+              {{ total_minutes }}
+            {% endif %}
+          {% else %}
+            {{ total_minutes }}
+          {% endif %}
+        unit_of_measurement: "min"
+        icon_template: mdi:timer
+        attribute_templates:
+          start_time: >-
+            {% set mower_state = states('lawn_mower.terramow_lawn_mower') %}
+            {% set current_start = state_attr('sensor.mower_progress', 'start_time') %}
+            
+            {% if mower_state == 'mowing' and not current_start %}
+              {{ now().isoformat() }}
+            {% elif mower_state == 'docked' %}
+              null
+            {% else %}
+              {{ current_start }}
+            {% endif %}
+          progress_percent: >-
+            {% set mower_state = states('lawn_mower.terramow_lawn_mower') %}
+            {% set total_minutes = 90 %}
+            {% set start_time = state_attr('sensor.mower_progress', 'start_time') %}
+            
+            {% if mower_state in ['mowing', 'paused'] and start_time %}
+              {% set elapsed_minutes = (now().timestamp() - (start_time | as_timestamp)) / 60 %}
+              {% set progress = (elapsed_minutes / total_minutes) * 100 %}
+              {{ [1, [100, progress] | min] | max | round(1) }}
+            {% elif mower_state == 'docked' %}
+              0
+            {% else %}
+              0
+            {% endif %}
+          total_minutes: 90
+          mower_state: >-
+            {{ states('lawn_mower.terramow_lawn_mower') }}
+
