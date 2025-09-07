@@ -1,4 +1,5 @@
 # TerraMow Home Assistant Dashboard Card
+using custom:button-card
 
 A beautiful, animated dashboard card for TerraMow lawn mowers in Home Assistant with real-time progress tracking and full control interface.
 
