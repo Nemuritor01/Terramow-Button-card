@@ -1,0 +1,506 @@
+type: custom:button-card
+entity: lawn_mower.terramow_lawn_mower
+name: TerraMow
+show_name: true
+show_icon: false
+show_state: false
+styles:
+  card:
+    - background: |
+        [[[
+          if (entity.state === 'mowing') return 'green';
+          if (entity.state === 'docked') return 'var(--card-background-color)';
+          if (entity.state === 'paused') return 'yellow';
+          if (entity.state === 'error') return 'red';
+          return 'linear-gradient(135deg, #2196F3 0%, #42A5F5 100%)';
+        ]]]
+    - border-radius: 24px
+    - box-shadow: 0 4px 16px rgba(0,0,0,0.1)
+    - padding: 24px
+    - border: none
+  grid:
+    - grid-template-areas: >-
+        "n" "info" "image" "bar" "status" "controls" "height_title"
+        "height_buttons"
+    - grid-template-columns: 1fr
+    - grid-template-rows: auto auto auto auto auto auto auto
+    - gap: 16px
+    - height: 100%
+  name:
+    - font-size: 18px
+    - font-style: italic
+    - font-weight: 600
+    - opacity: 1
+    - text-align: left
+    - justify-self: left
+    - margin: 0
+custom_fields:
+  image:
+    card:
+      type: custom:button-card
+      entity: lawn_mower.terramow_lawn_mower
+      show_name: false
+      show_icon: false
+      show_state: false
+      styles:
+        card:
+          - background: transparent
+          - border: none
+          - box-shadow: none
+          - padding: 0
+          - margin: 32px 0 32px 0
+          - height: 140px
+          - background-image: url('/local/picture/terramow_comic.png')
+          - background-size: contain
+          - background-repeat: no-repeat
+          - background-position: center
+          - border-radius: 16px
+          - animation: |
+              [[[
+                if (entity.state === 'mowing') return 'vibrate-2 1s infinite';
+              ]]]
+      tap_action:
+        action: none
+      extra_styles: |
+        @-webkit-keyframes vibrate-2 {
+          0% {
+            -webkit-transform: translate(0);
+                    transform: translate(0);
+          }
+          20% {
+            -webkit-transform: translate(2px, -2px);
+                    transform: translate(2px, -2px);
+          }
+          40% {
+            -webkit-transform: translate(2px, 2px);
+                    transform: translate(2px, 2px);
+          }
+          60% {
+            -webkit-transform: translate(-2px, 2px);
+                    transform: translate(-2px, 2px);
+          }
+          80% {
+            -webkit-transform: translate(-2px, -2px);
+                    transform: translate(-2px, -2px);
+          }
+          100% {
+            -webkit-transform: translate(0);
+                    transform: translate(0);
+          }
+        }
+        @keyframes vibrate-2 {
+          0% {
+            -webkit-transform: translate(0);
+                    transform: translate(0);
+          }
+          20% {
+            -webkit-transform: translate(2px, -2px);
+                    transform: translate(2px, -2px);
+          }
+          40% {
+            -webkit-transform: translate(2px, 2px);
+                    transform: translate(2px, 2px);
+          }
+          60% {
+            -webkit-transform: translate(-2px, 2px);
+                    transform: translate(-2px, 2px);
+          }
+          80% {
+            -webkit-transform: translate(-2px, -2px);
+                    transform: translate(-2px, -2px);
+          }
+          100% {
+            -webkit-transform: translate(0);
+                    transform: translate(0);
+          }
+        }
+  bar: |
+    [[[
+      var sensor = states['sensor.mower_progress'];
+      var mowerState = sensor.attributes.mower_state;
+      var progressPercent = parseFloat(sensor.attributes.progress_percent) || 0;
+      var remainingTime = parseInt(sensor.state) || 0;
+      var color = "var(--grey)";
+      
+      // Set color based on state and progress
+      if (mowerState === 'mowing') {
+        if (progressPercent < 30) color = "var(--red)";
+        else if (progressPercent < 70) color = "var(--yellow)";
+        else color = "var(--green)";
+      } else if (mowerState === 'paused') {
+        color = "var(--yellow)";
+      } else if (mowerState === 'docked') {
+        color = "var(--grey)";
+      }
+      
+      // Format time display
+      var timeDisplay = "";
+      if (mowerState === 'mowing' || mowerState === 'paused') {
+        var hours = Math.floor(remainingTime / 60);
+        var minutes = remainingTime % 60;
+        if (hours > 0) {
+          timeDisplay = hours + "h " + minutes + "m remaining";
+        } else {
+          timeDisplay = minutes + "m remaining";
+        }
+      } else {
+        timeDisplay = mowerState;
+      }
+      
+      return `
+      <div>
+        <div style="background:rgba(255,255,255,0.2); border-radius:24px; height:12px;">
+          <div style="background:${color}; border-radius:24px; height:12px; width:${progressPercent}%;"></div>
+        </div>
+        <div style="font-size:10px; margin-top:2px; text-align:center;">
+          ${Math.round(progressPercent)}%
+        </div>
+      </div>`;
+    ]]]
+  status:
+    card:
+      type: custom:button-card
+      entity: lawn_mower.terramow_lawn_mower
+      show_name: false
+      show_icon: false
+      show_state: true
+      state_display: |
+        [[[
+          return entity.state.toUpperCase();
+        ]]]
+      styles:
+        card:
+          - background: transparent
+          - border: none
+          - box-shadow: none
+          - padding: 0
+        state:
+          - font-size: 14px
+          - font-weight: 500
+          - opacity: 0.9
+          - text-align: left
+  info:
+    card:
+      type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          entity: sensor.terramow_battery
+          show_name: false
+          show_icon: true
+          show_state: true
+          icon: |
+            [[[
+              const battery = parseFloat(states['sensor.terramow_battery'].state);
+              if (battery > 75) return 'mdi:battery-high';
+              if (battery > 50) return 'mdi:battery-medium';
+              if (battery > 25) return 'mdi:battery-low';
+              if (battery > 10) return 'mdi:battery-outline';
+              return 'mdi:battery-alert';
+            ]]]
+          styles:
+            card:
+              - background: rgba(255,255,255,0.2)
+              - border-radius: 16px
+              - border: none
+              - padding: 12px
+              - margin: 0 4px 0 0
+            icon:
+              - width: 20px
+              - height: 20px
+              - margin-bottom: 4px
+              - color: green
+            state:
+              - font-size: 14px
+              - font-weight: 600
+          tap_action:
+            action: none
+        - type: custom:button-card
+          entity: sensor.terramow_current_session_time
+          show_name: false
+          show_icon: true
+          show_state: true
+          icon: mdi:clock-outline
+          styles:
+            card:
+              - background: rgba(255,255,255,0.2)
+              - border-radius: 16px
+              - border: none
+              - padding: 12px
+              - margin: 0 0 0 4px
+            icon:
+              - width: 20px
+              - height: 20px
+              - margin-bottom: 4px
+            state:
+              - font-size: 14px
+              - font-weight: 600
+          tap_action:
+            action: more-info
+  controls:
+    card:
+      type: custom:button-card
+      show_name: false
+      show_icon: false
+      show_state: false
+      styles:
+        card:
+          - background: rgba(255,255,255,0.3)
+          - border-radius: 50px
+          - border: none
+          - padding: 8px
+          - display: flex
+          - flex-direction: row
+          - justify-content: space-around
+          - align-items: center
+          - backdrop-filter: blur(10px)
+        grid:
+          - grid-template-areas: "\"pause_btn start_btn dock_btn\""
+          - grid-template-columns: 1fr 1fr 1fr
+          - gap: 0
+      custom_fields:
+        start_btn:
+          card:
+            type: custom:button-card
+            icon: mdi:play
+            show_name: false
+            show_icon: true
+            tap_action:
+              action: call-service
+              service: lawn_mower.start_mowing
+              service_data:
+                entity_id: lawn_mower.terramow_lawn_mower
+            styles:
+              card:
+                - background: transparent
+                - border: none
+                - box-shadow: none
+                - padding: 0px
+                - border-radius: 50%
+              img_cell:
+                - background: rgba(255,255,255,0.2)
+                - width: 56px
+                - height: 56px
+                - padding: 0
+                - border-radius: 50%
+              icon:
+                - width: 100%
+                - height: 100%
+        pause_btn:
+          card:
+            type: custom:button-card
+            icon: mdi:pause
+            show_name: false
+            show_icon: true
+            tap_action:
+              action: call-service
+              service: lawn_mower.pause
+              service_data:
+                entity_id: lawn_mower.terramow_lawn_mower
+            styles:
+              card:
+                - background: transparent
+                - border: none
+                - box-shadow: none
+                - padding: 16px
+                - border-radius: 50%
+              icon:
+                - width: 24px
+                - height: 24px
+        dock_btn:
+          card:
+            type: custom:button-card
+            icon: mdi:home
+            show_name: false
+            show_icon: true
+            tap_action:
+              action: call-service
+              service: lawn_mower.dock
+              service_data:
+                entity_id: lawn_mower.terramow_lawn_mower
+            styles:
+              card:
+                - background: transparent
+                - border: none
+                - box-shadow: none
+                - padding: 16px
+                - border-radius: 50%
+              icon:
+                - width: 24px
+                - height: 24px
+  height_title:
+    card:
+      type: custom:button-card
+      show_name: true
+      show_icon: false
+      show_state: false
+      name: Schnitthöhe
+      styles:
+        card:
+          - background: transparent
+          - border: none
+          - box-shadow: none
+          - padding: 0
+        name:
+          - font-size: 16px
+          - font-weight: 600
+          - opacity: 0.9
+          - text-align: left
+  height_buttons:
+    card:
+      type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          entity: number.terramow_mowing_height_setting
+          name: "40"
+          show_name: true
+          show_icon: false
+          tap_action:
+            action: call-service
+            service: number.set_value
+            service_data:
+              entity_id: number.terramow_mowing_height_setting
+              value: 40
+          styles:
+            card:
+              - background: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 40 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)';
+                  ]]]
+              - border-radius: 12px
+              - border: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 40 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                  ]]]
+              - padding: 8px
+              - margin: 0 2px
+              - backdrop-filter: blur(10px)
+              - min-height: 36px
+            name:
+              - font-size: 14px
+              - font-weight: 600
+        - type: custom:button-card
+          entity: number.terramow_mowing_height_setting
+          name: "45"
+          show_name: true
+          show_icon: false
+          tap_action:
+            action: call-service
+            service: number.set_value
+            service_data:
+              entity_id: number.terramow_mowing_height_setting
+              value: 45
+          styles:
+            card:
+              - background: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 45 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)';
+                  ]]]
+              - border-radius: 12px
+              - border: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 45 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                  ]]]
+              - padding: 8px
+              - margin: 0 2px
+              - backdrop-filter: blur(10px)
+              - min-height: 36px
+            name:
+              - font-size: 14px
+              - font-weight: 600
+        - type: custom:button-card
+          entity: number.terramow_mowing_height_setting
+          name: "50"
+          show_name: true
+          show_icon: false
+          tap_action:
+            action: call-service
+            service: number.set_value
+            service_data:
+              entity_id: number.terramow_mowing_height_setting
+              value: 50
+          styles:
+            card:
+              - background: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 50 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)';
+                  ]]]
+              - border-radius: 12px
+              - border: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 50 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                  ]]]
+              - padding: 8px
+              - margin: 0 2px
+              - backdrop-filter: blur(10px)
+              - min-height: 36px
+            name:
+              - font-size: 14px
+              - font-weight: 600
+        - type: custom:button-card
+          entity: number.terramow_mowing_height_setting
+          name: "55"
+          show_name: true
+          show_icon: false
+          tap_action:
+            action: call-service
+            service: number.set_value
+            service_data:
+              entity_id: number.terramow_mowing_height_setting
+              value: 55
+          styles:
+            card:
+              - background: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 55 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)';
+                  ]]]
+              - border-radius: 12px
+              - border: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 55 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                  ]]]
+              - padding: 8px
+              - margin: 0 2px
+              - backdrop-filter: blur(10px)
+              - min-height: 36px
+            name:
+              - font-size: 14px
+              - font-weight: 600
+        - type: custom:button-card
+          entity: number.terramow_mowing_height_setting
+          name: "60"
+          show_name: true
+          show_icon: false
+          tap_action:
+            action: call-service
+            service: number.set_value
+            service_data:
+              entity_id: number.terramow_mowing_height_setting
+              value: 60
+          styles:
+            card:
+              - background: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 60 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)';
+                  ]]]
+              - border-radius: 12px
+              - border: |
+                  [[[
+                    const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
+                    return currentValue === 60 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                  ]]]
+              - padding: 8px
+              - margin: 0 2px
+              - backdrop-filter: blur(10px)
+              - min-height: 36px
+            name:
+              - font-size: 14px
+              - font-weight: 600
