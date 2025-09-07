@@ -5,7 +5,7 @@ A beautiful, animated dashboard card for TerraMow lawn mowers in Home Assistant 
 ## Features
 
 - **Dynamic Background Colors**: Changes based on mower state (green for mowing, yellow for paused, red for errors)
-- **Animated Mower Image**: Vibration animation when actively mowing
+- **Animated Mower Image**: Animation when actively mowing
 - **Progress Bar**: Real-time progress tracking with estimated time remaining
 - **Battery & Session Info**: Quick view of battery level and current session time
 - **Full Control**: Start, pause, and dock buttons
@@ -44,7 +44,7 @@ Add the template sensor to your `configuration.yaml`:
 
 ### 4. Add the Card
 
-Copy the complete card configuration from `terramow-card.yaml` and paste it into your dashboard in edit mode.
+Copy the complete card configuration from `button-card.yaml` and paste it into your dashboard in edit mode.
 
 ## Customization
 
