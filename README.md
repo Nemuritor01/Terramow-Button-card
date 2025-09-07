@@ -1,4 +1,4 @@
-# TerraMow Home Assistant Dashboard Card using custom:button-card
+ModifyyyraMow Home Assistant Dashboard Card using custom:button-card
 
 A beautiful, animated dashboard card for TerraMow lawn mowers in Home Assistant with real-time progress tracking and full control interface.
 
@@ -23,6 +23,7 @@ A beautiful, animated dashboard card for TerraMow lawn mowers in Home Assistant 
 - TerraMow lawn mower integration
 
 ## Installation
+Ensure you have installed the Terramow integration. https://github.com/TerraMow/TerraMowHA
 
 ### 1. Install Button Card
 
@@ -59,7 +60,7 @@ If your TerraMow entities have different names, update these in the card configu
 - `number.terramow_mowing_height_setting`
 
 ### Cutting Heights
-Modify the height button values (currently 40, 45, 50, 55, 60mm) in the `height_buttons` section to match your mower's available settings.
+You can modify the height button values (currently 40, 45, 50, 55, 60mm) in the `height_buttons` section to match your liking.
 
 ### Colors and Styling
 The card uses CSS custom properties. You can customize colors by modifying the style sections in the configuration.
