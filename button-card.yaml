@@ -396,7 +396,7 @@ custom_fields:
               - border: |
                   [[[
                     const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
-                    return currentValue === 40 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                    return currentValue === 40 ? '2px solid var(--primary-text-color)' : 'none';
                   ]]]
               - padding: 8px
               - margin: 0 2px
@@ -427,7 +427,7 @@ custom_fields:
               - border: |
                   [[[
                     const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
-                    return currentValue === 45 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                    return currentValue === 45 ? '2px solid var(--primary-text-color)' : 'none';
                   ]]]
               - padding: 8px
               - margin: 0 2px
@@ -458,7 +458,7 @@ custom_fields:
               - border: |
                   [[[
                     const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
-                    return currentValue === 50 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                    return currentValue === 50 ? '2px solid var(--primary-text-color)' : 'none';
                   ]]]
               - padding: 8px
               - margin: 0 2px
@@ -489,7 +489,7 @@ custom_fields:
               - border: |
                   [[[
                     const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
-                    return currentValue === 55 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                    return currentValue === 55 ? '2px solid var(--primary-text-color)' : 'none';
                   ]]]
               - padding: 8px
               - margin: 0 2px
@@ -520,7 +520,7 @@ custom_fields:
               - border: |
                   [[[
                     const currentValue = parseFloat(states['number.terramow_mowing_height_setting'].state);
-                    return currentValue === 60 ? '2px solid rgba(255,255,255,0.8)' : 'none';
+                    return currentValue === 60 ? '2px solid var(--primary-text-color)' : 'none';
                   ]]]
               - padding: 8px
               - margin: 0 2px
