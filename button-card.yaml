@@ -333,7 +333,7 @@ custom_fields:
       show_name: true
       show_icon: false
       show_state: false
-      name: Schnitthöhe
+      name: Mowing Height
       styles:
         card:
           - background: transparent
