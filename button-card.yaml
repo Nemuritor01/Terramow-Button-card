@@ -8,11 +8,8 @@ styles:
   card:
     - background: |
         [[[
-          if (entity.state === 'mowing') return 'green';
-          if (entity.state === 'docked') return 'var(--card-background-color)';
-          if (entity.state === 'paused') return 'yellow';
-          if (entity.state === 'error') return 'red';
-          return 'linear-gradient(135deg, #2196F3 0%, #42A5F5 100%)';
+          if (entity.state === 'paused') return 'var(--gradient-orange2)';
+          if (entity.state === 'error') return 'var(--gradient-red)';
         ]]]
     - border-radius: 24px
     - box-shadow: 0 4px 16px rgba(0,0,0,0.1)
@@ -261,6 +258,7 @@ custom_fields:
         start_btn:
           card:
             type: custom:button-card
+            entity: lawn_mower.terramow_lawn_mower
             icon: mdi:play
             show_name: false
             show_icon: true
@@ -282,9 +280,35 @@ custom_fields:
                 - height: 56px
                 - padding: 0
                 - border-radius: 50%
+                - border: |
+                    [[[
+                      if (entity.state === 'mowing') return '3px solid transparent';
+                      return 'none';
+                    ]]]
+                - background: |
+                    [[[
+                      if (entity.state === 'mowing') {
+                        return 'conic-gradient(from 0deg, #4CAF50 0%, #81C784 25%, #A5D6A7 50%, #81C784 75%, #4CAF50 100%) border-box, rgba(255,255,255,0.2) padding-box';
+                      }
+                      return 'rgba(255,255,255,0.2)';
+                    ]]]
+                - animation: |
+                    [[[
+                      if (entity.state === 'mowing') return 'spin-border 0.2s linear infinite';
+                      return 'none';
+                    ]]]
               icon:
                 - width: 100%
                 - height: 100%
+            extra_styles: |
+              @keyframes spin-border {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+
+              ha-card .img_cell {
+                background-clip: padding-box, border-box !important;
+              }
         pause_btn:
           card:
             type: custom:button-card
@@ -327,6 +351,7 @@ custom_fields:
               icon:
                 - width: 24px
                 - height: 24px
+      extra_styles: ""
   height_title:
     card:
       type: custom:button-card
