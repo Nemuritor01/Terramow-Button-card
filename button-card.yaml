@@ -8,8 +8,8 @@ styles:
   card:
     - background: |
         [[[
-          if (entity.state === 'paused') return 'var(--gradient-orange2)';
-          if (entity.state === 'error') return 'var(--gradient-red)';
+          if (entity.state === 'paused') return 'orange';
+          if (entity.state === 'error') return 'red';
         ]]]
     - border-radius: 24px
     - box-shadow: 0 4px 16px rgba(0,0,0,0.1)
@@ -35,10 +35,65 @@ styles:
     bar:
       - justify-self: start
       - width: 100%
-      - height: 18px
-      - background: rgba(255,255,255,0.2)
       - border-radius: 24px
 custom_fields:
+  info:
+    card:
+      type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          entity: sensor.terramow_battery
+          show_name: false
+          show_icon: true
+          show_state: true
+          icon: |
+            [[[
+              const battery = parseFloat(states['sensor.terramow_battery'].state);
+              if (battery > 75) return 'mdi:battery-high';
+              if (battery > 50) return 'mdi:battery-medium';
+              if (battery > 25) return 'mdi:battery-low';
+              if (battery > 10) return 'mdi:battery-outline';
+              return 'mdi:battery-alert';
+            ]]]
+          styles:
+            card:
+              - background: rgba(255,255,255,0.2)
+              - border-radius: 16px
+              - border: none
+              - padding: 12px
+              - margin: 0 4px 0 0
+            icon:
+              - width: 20px
+              - height: 20px
+              - margin-bottom: 4px
+              - color: green
+            state:
+              - font-size: 14px
+              - font-weight: 600
+          tap_action:
+            action: none
+        - type: custom:button-card
+          entity: sensor.terramow_current_session_time
+          show_name: false
+          show_icon: true
+          show_state: true
+          icon: mdi:clock-outline
+          styles:
+            card:
+              - background: rgba(255,255,255,0.2)
+              - border-radius: 16px
+              - border: none
+              - padding: 12px
+              - margin: 0 0 0 4px
+            icon:
+              - width: 20px
+              - height: 20px
+              - margin-bottom: 4px
+            state:
+              - font-size: 14px
+              - font-weight: 600
+          tap_action:
+            action: more-info
   image:
     card:
       type: custom:button-card
@@ -124,39 +179,44 @@ custom_fields:
       var mowerState = sensor.attributes.mower_state;
       var progressPercent = parseFloat(sensor.attributes.progress_percent) || 0;
       var remainingTime = parseInt(sensor.state) || 0;
-      var color = "var(--grey)";
+      var color = "grey";
       
       // Set color based on state and progress
       if (mowerState === 'mowing') {
-        if (progressPercent < 30) color = "var(--red)";
-        else if (progressPercent < 70) color = "var(--yellow)";
-        else color = "var(--green)";
+        if (progressPercent < 30) color = "red";
+        else if (progressPercent < 70) color = "yellow";
+        else color = "green";
       } else if (mowerState === 'paused') {
-        color = "var(--yellow)";
+        color = "yellow";
       } else if (mowerState === 'docked') {
-        color = "var(--grey)";
+        color = "grey";
       }
       
-      // Format time display
-      var timeDisplay = "";
-      if (mowerState === 'mowing' || mowerState === 'paused') {
-        var hours = Math.floor(remainingTime / 60);
-        var minutes = remainingTime % 60;
-        if (hours > 0) {
-          timeDisplay = hours + "h " + minutes + "m remaining";
-        } else {
-          timeDisplay = minutes + "m remaining";
-        }
-      } else {
-        timeDisplay = mowerState;
+      // Calculate circle position accounting for circle width
+      // Circle is 20px wide, so we need 10px margin on each side
+      // Available space for movement = 100% - 20px
+      // Position = (progressPercent / 100) * (100% - 20px) + 10px
+      var circlePositionCalc = `calc(${progressPercent}% * (100% - 20px) / 100% + 10px)`;
+      
+      // Alternative: Use CSS calc for cleaner positioning
+      // This ensures the circle center aligns with the progress percentage
+      var circleLeft = `calc(${progressPercent}% - 10px)`;
+      
+      // Clamp the position to prevent overflow
+      if (progressPercent <= 5) {
+        circleLeft = "0px"; // Minimum position (circle radius)
+      } else if (progressPercent >= 95) {
+        circleLeft = "calc(100% - 20px)"; // Maximum position (100% - circle radius)
       }
       
       return `
-      <div style="display: flex; position: relative; align-items: center; width: 100%; height: 100%;">
-        <div style="position: absolute; width: 100%; font-size: 10px; text-align: center; z-index: 1;">
+      <div style="height: 24px; width: 100%; position: relative; overflow: visible; display: flex; align-items: center;">
+        <div style="background: rgba(255,255,255,0.2); border-radius: 24px; height: 22px; width: 100%; position: relative;">
+          <div style="background: ${color}; height: 22px; width: ${progressPercent}%; border-radius: 24px 0px 0px 24px; transition: width 0.3s ease;"></div>
+        </div>
+        <div style="background: rgb(255,255,255); border-radius: 50%; height: 20px; width: 20px; position: absolute; left: ${circleLeft}; color: var(--primary-background-color); font-size: 10px; font-weight: 600; border: 2px solid #353946; display: flex; justify-content: center; align-items: center; transition: left 0.3s ease;">
           ${Math.round(progressPercent)}%
         </div>
-        <div style="background: ${color}; height: 100%; width: ${progressPercent}%; border-radius: 24px; transition: width 0.3s ease;"></div>
       </div>
       `;
     ]]]
@@ -182,63 +242,6 @@ custom_fields:
           - font-weight: 500
           - opacity: 0.9
           - text-align: left
-  info:
-    card:
-      type: horizontal-stack
-      cards:
-        - type: custom:button-card
-          entity: sensor.terramow_battery
-          show_name: false
-          show_icon: true
-          show_state: true
-          icon: |
-            [[[
-              const battery = parseFloat(states['sensor.terramow_battery'].state);
-              if (battery > 75) return 'mdi:battery-high';
-              if (battery > 50) return 'mdi:battery-medium';
-              if (battery > 25) return 'mdi:battery-low';
-              if (battery > 10) return 'mdi:battery-outline';
-              return 'mdi:battery-alert';
-            ]]]
-          styles:
-            card:
-              - background: rgba(255,255,255,0.2)
-              - border-radius: 16px
-              - border: none
-              - padding: 12px
-              - margin: 0 4px 0 0
-            icon:
-              - width: 20px
-              - height: 20px
-              - margin-bottom: 4px
-              - color: green
-            state:
-              - font-size: 14px
-              - font-weight: 600
-          tap_action:
-            action: none
-        - type: custom:button-card
-          entity: sensor.terramow_current_session_time
-          show_name: false
-          show_icon: true
-          show_state: true
-          icon: mdi:clock-outline
-          styles:
-            card:
-              - background: rgba(255,255,255,0.2)
-              - border-radius: 16px
-              - border: none
-              - padding: 12px
-              - margin: 0 0 0 4px
-            icon:
-              - width: 20px
-              - height: 20px
-              - margin-bottom: 4px
-            state:
-              - font-size: 14px
-              - font-weight: 600
-          tap_action:
-            action: more-info
   controls:
     card:
       type: custom:button-card
@@ -300,7 +303,7 @@ custom_fields:
                     ]]]
                 - animation: |
                     [[[
-                      if (entity.state === 'mowing') return 'spin-border 0.2s linear infinite';
+                      if (entity.state === 'mowing') return 'spin-border 0.3s linear infinite';
                       return 'none';
                     ]]]
               icon:
